@@ -1,0 +1,5 @@
+export enum EVENT_TYPE {
+    BENEFICIARY=0,
+    INCOMING,
+    OUTGOING
+}
