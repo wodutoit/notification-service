@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO locking</title>
+    <style>
+      body { font: 13px Helvetica, Arial; }
+      form { width:100% }
+      form label { background: #FFF; border: 0; padding: 10px; width: 30%; }
+      table { width: 100% }
+    </style>
+  </head>
+  <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2/dist/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+  function generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();//Timestamp
+    var d2 = (performance && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16;//random number between 0 and 16
+        if(d > 0){//Use timestamp until depleted
+            r = (d + r)%16 | 0;
+            d = Math.floor(d/16);
+        } else {//Use microseconds since page-load if supported
+            r = (d2 + r)%16 | 0;
+            d2 = Math.floor(d2/16);
+        }
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+   $(function () {
+    var uId = generateUUID();
+    console.log(uId);
+    const socket = io('http://localhost:3000', { query:'userId=' + uId });
+    socket.on('connect', function(){
+      console.log('connected');
+    });
+    
+    $(document).ready(function() {
+      document.getElementById("userId").innerHTML = uId;
+    });
+
+    $("#rowlockform button").click(function(ev){
+      ev.preventDefault()// cancel form submission
+      var row = 0;
+      var lockbtn = true;
+      if ($(this).attr("id") == "lock1") {  
+        row = 1;
+        lockbtn = true;
+      }
+      else if ($(this).attr("id") == "lock2") {
+        row = 2;
+        lockbtn = true;
+      }
+      else if ($(this).attr("id") == "lock3") {
+        row = 3;
+        lockbtn = true;
+      }
+      else if ($(this).attr("id") == "unlock1") {
+        row = 1;
+        lockbtn = false;
+      }
+      else if ($(this).attr("id") == "unlock2") {
+        row = 2;
+        lockbtn = false;
+      }
+      else if ($(this).attr("id") == "unlock3") {
+        row = 3;
+        lockbtn = false;
+      }
+      if(lockbtn) {
+        $.fn.callLock("row"+row, "row"+row+"desc", "row"+row+"locked", "response"+row);
+      } else {
+        $.fn.callUnLock("row"+row, "row"+row+"desc", "row"+row+"locked", "response"+row);
+      }
+    });
+    //user functions
+    $.fn.callLock = function(rowId, rowDescId, isLockedId, responseId) {
+      console.log('calling lock');
+      var resource = {
+          userId: uId,
+          resource: document.getElementById(rowDescId).innerHTML,
+          resourceId: document.getElementById(rowId).innerHTML
+        };       
+        socket.emit('lock', resource, function(result){
+          console.log(result);
+          if(result.Success) {
+            document.getElementById(responseId).innerHTML = 'Success Row Locked';
+            document.getElementById(isLockedId).innerHTML = result.Resource.locked;
+          } else {
+            document.getElementById(responseId).innerHTML = result.Message;
+            document.getElementById(isLockedId).innerHTML = true;
+          }
+        });
+    };
+
+    $.fn.callUnLock = function(rowId, rowDescId, isLockedId, responseId) {
+      var resource = {
+          userId: uId,
+          resource: document.getElementById(rowDescId).innerHTML,
+          resourceId: document.getElementById(rowId).innerHTML
+        };           
+      socket.emit('unlock', resource, function(result){
+        console.log(result);
+        if(result.Success) {
+          document.getElementById(responseId).innerHTML = 'Success Row UnLocked';
+          document.getElementById(isLockedId).innerHTML = false;
+        } else {
+          document.getElementById(responseId).innerHTML = result.Message;
+        }
+      });
+    };
+
+
+    //messages from socket
+    socket.on('locked', function(resource){
+      console.log('row locked');
+      var rowid = resource.resourceId;
+      //"row"+row, "row"+row+"desc", "row"+row+"locked", "response"+row
+      document.getElementById('row' + rowid + 'locked').innerHTML = resource.locked;
+      document.getElementById('response' + rowid).innerHTML = 'Someone locked this row!';
+    });
+
+    socket.on('unlocked', function(resource){
+      console.log('row unlocked');
+      var rowid = resource.resourceId;
+      //"row"+row, "row"+row+"desc", "row"+row+"locked", "response"+row
+      document.getElementById('row' + rowid + 'locked').innerHTML = resource.locked;
+      document.getElementById('response' + rowid).innerHTML = 'Someone unlocked this row!';
+    });
+
+  });
+  </script>
+  <body>
+    <p>User Id:</p><span id="userId"></span></p>
+    <br>
+    <form id="rowlockform" action="">
+      <table>
+        <tr>
+          <th>rowid</th>
+          <th>description</th>
+          <th>is locked</th>
+          <th>Response</th>
+        </tr>
+        <tr>
+          <td id="row1">1</td>
+          <td id="row1desc">beneficiary</td>
+          <td>
+            <span id="row1locked">false</span>
+            <button id="lock1">lock</button>
+            <button id="unlock1">unlock</button>
+          </td>
+          <td><span id="response1"></span></td>
+        </tr>
+        <tr>
+          <td id="row2">2</td>
+          <td id="row2desc">IP</td>
+          <td>
+            <span id="row2locked">false</span>
+            <button id="lock2">lock</button>
+            <button id="unlock2">unlock</button>
+          </td>
+          <td><span id="response2"></span></td>
+        </tr>
+        <tr>
+          <td id="row3">3</td>
+          <td id="row3desc">OP</td>
+          <td>
+            <span id="row3locked">false</span>
+            <button id="lock3">lock</button>
+            <button id="unlock3">unlock</button>
+          </td>
+          <td><span id="response3"></span></td>
+        </tr>
+      </table>
+      <label>User Count:<span id="userCount"></span></label>
+    </form>
+  </body>
+</html>
