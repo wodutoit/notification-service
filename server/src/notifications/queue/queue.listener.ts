@@ -19,7 +19,7 @@ export class QueueListener
     private queueService: azure.QueueService;
     private queueName: string = 'sample'; 
     private interval: NodeJS.Timer;
-    private maxInterval: number = 15;
+    private maxInterval: number = 10;
     private timeout:number = 1;
 
     constructor(timeout:number = 1, readonly numMessages:number = 1, queueService:azure.QueueService) {
