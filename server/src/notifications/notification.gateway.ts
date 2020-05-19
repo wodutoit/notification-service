@@ -21,7 +21,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         this.connCount++;
         if(this.connCount == 1) {
             //when the first person connect do the init
-            this.notificationService.start();
+            this.notificationService.start(this);
         }
     }
 

@@ -110,6 +110,13 @@
       });
     };
 
+    $.fn.updateList = function(msg) {
+      var li = document.createElement('li');
+      var val = "Event Type: " + msg.eventtype + " | resourceid: " + msg.resourceid + "  | " + msg.status;
+      li.innerText = val;
+      var ul = document.getElementById('queueMessages');
+      ul.appendChild(li);
+    }
 
     //messages from socket
     socket.on('locked', function(resource){
@@ -128,6 +135,18 @@
       document.getElementById('response' + rowid).innerHTML = 'Someone unlocked this row!';
     });
 
+    socket.on('BENEFICIARY', function(msg) {
+        console.log(`beneficiary message received`);
+        $.fn.updateList(msg);
+    }); 
+    socket.on('INCOMING', function(msg) {
+        console.log(`incoming message received`);
+        $.fn.updateList(msg);
+    }); 
+    socket.on('OUTGOING', function(msg) {
+        console.log(`outgoing message received`);
+        $.fn.updateList(msg);
+    }); 
   });
   </script>
   <body>
@@ -174,5 +193,10 @@
       </table>
       <label>User Count:<span id="userCount"></span></label>
     </form>
+    <div>
+      <h3>List the messages received from the queue</h3>
+      <ul id="queueMessages">
+      </ul>
+    </div>
   </body>
 </html>

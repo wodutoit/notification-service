@@ -1,5 +1,5 @@
-export enum EVENT_TYPE {
-    BENEFICIARY=0,
-    INCOMING,
-    OUTGOING
+export const EVENT_TYPE = {
+    BENEFICIARY: 'BENEFICIARY',
+    INCOMING: 'INCOMING',
+    OUTGOING: 'OUTGOING'
 }
