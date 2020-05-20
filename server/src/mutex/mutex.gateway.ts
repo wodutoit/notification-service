@@ -48,7 +48,7 @@ export class MutexGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server.emit('userCount', this.users.length);
 
     }
-    //not async we don't want parallel execution of locking
+    
     @SubscribeMessage('lock')
     onLock(@MessageBody() resource: MutexResource): MutexResult {
         const result = this.mutexService.lock(resource);

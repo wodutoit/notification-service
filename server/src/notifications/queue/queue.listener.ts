@@ -19,7 +19,7 @@ export class QueueListener
     private queueService: azure.QueueService;
     private queueName: string = 'sample'; 
     private interval: NodeJS.Timer;
-    private maxInterval: number = 10;
+    private maxInterval: number = 13; //so max is 2^13 == 8192 (just over 8 seconds)
     private timeout:number = 1;
 
     constructor(timeout:number = 1, readonly numMessages:number = 1, queueService:azure.QueueService) {
@@ -40,7 +40,8 @@ export class QueueListener
     }
     private resetInterval():void {
         clearInterval(this.interval);
-        this.interval = setInterval(this.getMessages.bind(this), Math.pow(2,this.timeout));
+        const ms = Math.pow(2,this.timeout);
+        this.interval = setInterval(this.getMessages.bind(this), ms);
     }
     private adjustInterval(messageCount:number): void {
         if (messageCount > 0 && this.timeout > 0) {

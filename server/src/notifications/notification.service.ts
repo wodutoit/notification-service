@@ -60,11 +60,11 @@ export class NotificationService {
     }
 
     private startListener(eventtype: string, queueName: string): QueueListener {
-        const listener = new QueueListener(10, 16, this.queueService);
+        const listener = new QueueListener(5, 16, this.queueService);
         
         listener.on(EMIT_EVENTS.ERROR, function(error){
             //what do you wan to do when an error occurs
-            console.log(`Error code: ${error.code}, message: ${error.message} timestamp: ${Date()}`);
+            //console.log(`Error code: ${error.code}, message: ${error.message} timestamp: ${Date()}`);
         });
 
         listener.on(EMIT_EVENTS.MESSAGE, this.onMessage.bind(this, eventtype, queueName) );
