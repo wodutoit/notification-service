@@ -81,8 +81,9 @@ export class NotificationService {
          //need to process the message body which should be a JSON 
          //string and pull the resource id and status from it
         const emitMessage = EventMessage.parseMessage(eventtype, message);
-        
-        this.gateway.statusChange(emitMessage);
+        if(emitMessage) {
+            this.gateway.statusChange(emitMessage);
+        }
         // delete the message when done
         this.queueService.deleteMessage(queueName
                     , message.messageId

@@ -14,7 +14,8 @@ export class MutexService {
                 result.Resource = resource;
                 this._resources.push(resource);
             } else {
-                result = MutexResultFactory.getLockFailureResult("Resource is already locked");
+                const lockedby = this.lockedBy(resource);
+                result = MutexResultFactory.getLockFailureResult(`Resource is already locked by: ${lockedby ? lockedby : ""}`);
             }
         } catch (err) {
             //something unrelated went wrong
@@ -32,7 +33,13 @@ export class MutexService {
                 resource.locked = false;
                 result.Resource = resource;
             } else {
-                result = MutexResultFactory.getLockFailureResult("Failed to unlock record the record may not have been locked or you are not the owner of the lock")
+                const lockedby:string = this.lockedBy(resource);
+                if(lockedby) {
+                    result = MutexResultFactory.getLockFailureResult(`Resource is already locked by: ${lockedby}`);
+                }
+                else {
+                    result = MutexResultFactory.getLockFailureResult("Resource is not locked, therefore unable to release the lock.");
+                }
             }
         } catch (err) {
             //something unrelated went wrong
@@ -69,6 +76,11 @@ export class MutexService {
         //check if the current resource is in the resources collection if so return false
         const index = this._resources.findIndex(res => res.resource === resource.resource && res.resourceId === resource.resourceId);
         return index > -1 ? true : false;
+    }
+
+    private lockedBy(resource:MutexResource): string {
+        const index = this._resources.findIndex(res => res.resource === resource.resource && res.resourceId === resource.resourceId);
+        return index > -1 ? this._resources[index].userId : undefined;
     }
 
     private removeLocked(resource: MutexResource): boolean {

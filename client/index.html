@@ -112,7 +112,7 @@
 
     $.fn.updateList = function(msg) {
       var li = document.createElement('li');
-      var val = "Event Type: " + msg.eventtype + " | resourceid: " + msg.resourceid + "  | " + msg.status;
+      var val = "Event Type: " + msg.eventtype + "| resource type: "+ msg.resourcetype + " | resourceid: " + msg.resourceid + "  | " + msg.status;
       li.innerText = val;
       var ul = document.getElementById('queueMessages');
       ul.appendChild(li);
