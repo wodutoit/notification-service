@@ -29,8 +29,9 @@
   }
    $(function () {
     var uId = generateUUID();
+    var clientId = 'ABC12345-AA23';
     console.log(uId);
-    const socket = io('http://localhost:3000', { query:'userId=' + uId });
+    const socket = io('http://localhost:3000', { query:'clientId='+ clientId +'&userId=' + uId });
     socket.on('connect', function(){
       console.log('connected');
     });

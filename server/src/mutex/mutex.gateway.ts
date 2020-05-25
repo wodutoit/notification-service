@@ -18,16 +18,19 @@ export class MutexGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // A client has connected
         const newUser:MutexUser = {
             socketId: client.id,
+            clientId: client.handshake.query.clientId,
             userId:client.handshake.query.userId
         };
         const index = this.users.findIndex(usr => usr.socketId === newUser.socketId);
         if(index == -1) {
             this.users.push(newUser);
         } else {
+            this.users[index].clientId = newUser.clientId;
             this.users[index].userId = newUser.userId;
         }
         // Notify connected clients of current users
-        console.log(`User Added. User Count: ${this.users.length} | total locks: ${this.mutexService.lockCount()} |  lock count: ${this.mutexService.userLockCount(newUser.userId)}`);
+        console.log(`Newuser clientId: ${newUser.clientId} and userid: ${newUser.userId}`);
+        console.log(`User Added. User Count: ${this.users.length} | total locks: ${this.mutexService.lockCount()} |  lock count: ${this.mutexService.userLockCount(newUser)}`);
         this.server.emit('userCount', this.users.length);
     }
 
@@ -38,9 +41,9 @@ export class MutexGateway implements OnGatewayConnection, OnGatewayDisconnect {
         let lockCount: Number = 0;
         let afterlockCount: Number = 0;
         if(index > -1) {
-            lockCount = this.mutexService.userLockCount(this.users[index].userId);
-            this.mutexService.releaseAll(this.users[index].userId);
-            afterlockCount = this.mutexService.userLockCount(this.users[index].userId);
+            lockCount = this.mutexService.userLockCount(this.users[index]);
+            this.mutexService.releaseAll(this.users[index]);
+            afterlockCount = this.mutexService.userLockCount(this.users[index]);
             this.users.splice(index, 1);
         }
         // Notify connected clients of current users

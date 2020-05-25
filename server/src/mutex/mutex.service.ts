@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MutexResource } from './interfaces/mutex-resource.interface';
 import { MutexResult, MutexResultFactory } from './interfaces/mutex-result.interface';
+import { MutexUser } from './interfaces/mutex-user.interface';
 
 @Injectable()
 export class MutexService {
@@ -50,10 +51,10 @@ export class MutexService {
         return result;
     }
 
-    releaseAll(userId) {
+    releaseAll(user:MutexUser):void {
         let index = 0;
         while(index > -1) {
-            index = this._resources.findIndex(lock => lock.userId === userId);
+            index = this._resources.findIndex(lock => lock.userId === user.userId && lock.clientId === user.clientId);
             if(index > -1) {
                 this._resources.splice(index, 1);
             }
@@ -64,10 +65,10 @@ export class MutexService {
         return this._resources.length;
     }
 
-    userLockCount(userId:string):Number {
+    userLockCount(user:MutexUser):Number {
         let count = 0;
         for (const lock of this._resources) {
-            if(lock.userId === userId) {
+            if(lock.userId === user.userId && lock.clientId === user.clientId) {
                 count++;
             }
         }
@@ -76,19 +77,19 @@ export class MutexService {
 
     private isLocked(resource:MutexResource): boolean {
         //check if the current resource is in the resources collection if so return false
-        const index = this._resources.findIndex(res => res.resource === resource.resource && res.resourceId === resource.resourceId);
+        const index = this._resources.findIndex(res => res.clientId === resource.clientId && res.resource === resource.resource && res.resourceId === resource.resourceId);
         return index > -1 ? true : false;
     }
 
     private lockedBy(resource:MutexResource): MutexResource {
-        const index = this._resources.findIndex(res => res.resource === resource.resource && res.resourceId === resource.resourceId);
+        const index = this._resources.findIndex(res => res.clientId === resource.clientId && res.resource === resource.resource && res.resourceId === resource.resourceId);
         return index > -1 ? this._resources[index] : undefined;
     }
 
     private removeLocked(resource: MutexResource): boolean {
         //can only inlock if you locked it
         let result = false;
-        const index = this._resources.findIndex(res =>res.userId === resource.userId && res.resource === resource.resource && res.resourceId === resource.resourceId);
+        const index = this._resources.findIndex(res => res.clientId === resource.clientId && res.userId === resource.userId && res.resource === resource.resource && res.resourceId === resource.resourceId);
         if(index != -1) {
             this._resources.splice(index, 1);
             result = true;
