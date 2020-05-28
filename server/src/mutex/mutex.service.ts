@@ -51,14 +51,17 @@ export class MutexService {
         return result;
     }
 
-    releaseAll(user:MutexUser):void {
+    releaseAll(user:MutexUser):MutexResource[] {
+        const result:MutexResource[] = [];
         let index = 0;
         while(index > -1) {
-            index = this._resources.findIndex(lock => lock.userId === user.userId && lock.clientId === user.clientId);
+            index = this._resources.findIndex(lock => lock.socketId === user.socketId && lock.userId === user.userId && lock.clientId === user.clientId);
             if(index > -1) {
+                result.push(this._resources[index]);
                 this._resources.splice(index, 1);
             }
         }
+        return result;
     }
 
     lockCount() :Number {
@@ -89,7 +92,7 @@ export class MutexService {
     private removeLocked(resource: MutexResource): boolean {
         //can only inlock if you locked it
         let result = false;
-        const index = this._resources.findIndex(res => res.clientId === resource.clientId && res.userId === resource.userId && res.resource === resource.resource && res.resourceId === resource.resourceId);
+        const index = this._resources.findIndex(res => res.socketId === resource.socketId && res.clientId === resource.clientId && res.userId === resource.userId && res.resource === resource.resource && res.resourceId === resource.resourceId);
         if(index != -1) {
             this._resources.splice(index, 1);
             result = true;
@@ -97,5 +100,10 @@ export class MutexService {
         return result;
     }
 
-    
+    printLocks():void {
+        console.log(`Lock count: ${this.lockCount()}`);
+        for(const lock of this._resources) {
+            console.log(`Lock { socketid: ${lock.socketId}, userid: ${lock.userId}, resourceid: ${lock.resourceId}`);
+        }
+    }
 }

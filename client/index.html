@@ -80,7 +80,8 @@
       var resource = {
           userId: uId,
           resource: document.getElementById(rowDescId).innerHTML,
-          resourceId: document.getElementById(rowId).innerHTML
+          resourceId: document.getElementById(rowId).innerHTML,
+          clientId: clientId
         };       
         socket.emit('lock', resource, function(result){
           console.log(result);
@@ -98,7 +99,8 @@
       var resource = {
           userId: uId,
           resource: document.getElementById(rowDescId).innerHTML,
-          resourceId: document.getElementById(rowId).innerHTML
+          resourceId: document.getElementById(rowId).innerHTML,
+          clientId: clientId
         };           
       socket.emit('unlock', resource, function(result){
         console.log(result);

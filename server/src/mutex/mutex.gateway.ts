@@ -1,4 +1,4 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect, MessageBody, WsResponse } from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect, MessageBody, WsResponse, ConnectedSocket } from '@nestjs/websockets';
 import { from, Observable } from 'rxjs';
 import { MutexService } from './mutex.service';
 import { MutexResource } from './interfaces/mutex-resource.interface';
@@ -42,20 +42,26 @@ export class MutexGateway implements OnGatewayConnection, OnGatewayDisconnect {
         let afterlockCount: Number = 0;
         if(index > -1) {
             lockCount = this.mutexService.userLockCount(this.users[index]);
-            this.mutexService.releaseAll(this.users[index]);
+            const unlocked: MutexResource[] = this.mutexService.releaseAll(this.users[index]);
+            for (const lock of unlocked) {
+                this.server.emit('unlocked', lock);
+            }
             afterlockCount = this.mutexService.userLockCount(this.users[index]);
             this.users.splice(index, 1);
         }
         // Notify connected clients of current users
         console.log(`User Removed. User Count: ${this.users.length} | total locks: ${this.mutexService.lockCount()} |  orig lock count: ${lockCount} | after ${afterlockCount}`);
+        this.mutexService.printLocks();
         this.server.emit('userCount', this.users.length);
 
     }
     
     @SubscribeMessage('lock')
-    onLock(@MessageBody() resource: MutexResource): MutexResult {
-        const result = this.mutexService.lock(resource);
-        console.log(`server received resource lock request ${result.Success}`);
+    onLock(@ConnectedSocket() client:Socket, @MessageBody() resource: MutexResource): MutexResult {
+        const updatedResource = resource;
+        updatedResource.socketId = client.id;
+        const result = this.mutexService.lock(updatedResource);
+        console.log(`server received resource lock request ${result.Success} clientid: ${client.id}`);
         if(result.Success) {
             console.log(`lock request successful ${resource}`);
             this.server.emit('locked', resource);
@@ -64,8 +70,10 @@ export class MutexGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     @SubscribeMessage('unlock')
-    onUnLock(@MessageBody() resource: MutexResource): MutexResult {
-        const result = this.mutexService.unlock(resource);
+    onUnLock(@ConnectedSocket() client:Socket, @MessageBody() resource: MutexResource): MutexResult {
+        const updatedResource = resource;
+        updatedResource.socketId = client.id;
+        const result = this.mutexService.unlock(updatedResource);
         console.log(`server received resource Unlock request ${resource}`);
         if(result.Success) {
             console.log(`unlock request successful ${resource}`);

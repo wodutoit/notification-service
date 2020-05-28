@@ -4,4 +4,5 @@ export interface MutexResource {
     resource: string;
     resourceId: string;
     locked?:boolean;
+    socketId?:string;
 }
