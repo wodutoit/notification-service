@@ -101,9 +101,9 @@ export class MutexService {
     }
 
     printLocks():void {
-        console.log(`Lock count: ${this.lockCount()}`);
+        //console.log(`Lock count: ${this.lockCount()}`);
         for(const lock of this._resources) {
-            console.log(`Lock { socketid: ${lock.socketId}, userid: ${lock.userId}, resourceid: ${lock.resourceId}`);
+            //console.log(`Lock { socketid: ${lock.socketId}, userid: ${lock.userId}, resourceid: ${lock.resourceId}`);
         }
     }
 }

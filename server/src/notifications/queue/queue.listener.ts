@@ -64,7 +64,7 @@ export class QueueListener
             this.callbackfn.bind(this)
             );
         } catch (err) {
-            console.log(`major error: ${err}`);
+            //console.log(`major error: ${err}`);
             this.adjustInterval(0);
         }
     }

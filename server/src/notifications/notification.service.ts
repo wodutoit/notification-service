@@ -91,7 +91,7 @@ export class NotificationService {
                     , function(error){
                         if(!error){
                             //message was deleted from the queue
-                            console.log("deleted");
+                            //console.log("deleted");
                         }
                         //do nothing if it fails to delete the message
                     });

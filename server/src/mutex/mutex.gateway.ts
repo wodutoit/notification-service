@@ -29,8 +29,8 @@ export class MutexGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.users[index].userId = newUser.userId;
         }
         // Notify connected clients of current users
-        console.log(`Newuser clientId: ${newUser.clientId} and userid: ${newUser.userId}`);
-        console.log(`User Added. User Count: ${this.users.length} | total locks: ${this.mutexService.lockCount()} |  lock count: ${this.mutexService.userLockCount(newUser)}`);
+        //console.log(`Newuser clientId: ${newUser.clientId} and userid: ${newUser.userId}`);
+        //console.log(`User Added. User Count: ${this.users.length} | total locks: ${this.mutexService.lockCount()} |  lock count: ${this.mutexService.userLockCount(newUser)}`);
         this.server.emit('userCount', this.users.length);
     }
 
@@ -50,7 +50,7 @@ export class MutexGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.users.splice(index, 1);
         }
         // Notify connected clients of current users
-        console.log(`User Removed. User Count: ${this.users.length} | total locks: ${this.mutexService.lockCount()} |  orig lock count: ${lockCount} | after ${afterlockCount}`);
+        //console.log(`User Removed. User Count: ${this.users.length} | total locks: ${this.mutexService.lockCount()} |  orig lock count: ${lockCount} | after ${afterlockCount}`);
         this.mutexService.printLocks();
         this.server.emit('userCount', this.users.length);
 
@@ -61,9 +61,9 @@ export class MutexGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const updatedResource = resource;
         updatedResource.socketId = client.id;
         const result = this.mutexService.lock(updatedResource);
-        console.log(`server received resource lock request ${result.Success} clientid: ${client.id}`);
+        //console.log(`server received resource lock request ${result.Success} clientid: ${client.id}`);
         if(result.Success) {
-            console.log(`lock request successful ${resource}`);
+            //console.log(`lock request successful ${resource}`);
             this.server.emit('locked', resource);
         }
         return result;
@@ -74,9 +74,9 @@ export class MutexGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const updatedResource = resource;
         updatedResource.socketId = client.id;
         const result = this.mutexService.unlock(updatedResource);
-        console.log(`server received resource Unlock request ${resource}`);
+        //console.log(`server received resource Unlock request ${resource}`);
         if(result.Success) {
-            console.log(`unlock request successful ${resource}`);
+            //console.log(`unlock request successful ${resource}`);
             this.server.emit('unlocked', resource);
         }
         return result;
